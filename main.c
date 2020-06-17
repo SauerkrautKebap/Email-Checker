@@ -5,47 +5,7 @@
 #include <stdio.h>
 #include <winsock2.h>
 
-//#pragma comment(lib,"ws2_32.lib") //Winsock Library
-
-int sock_start();
-
-int main(int argc, char *argv[])
-{
-	WSADATA wsa;
-	SOCKET s;
-	char *hostname, *message, server_reply[2000];
-	int recv_size, svr_port;
-
-	hostname = "pop.gmail.com";
-	svr_port = 995;
-
-	if (sock_start(&wsa, &s, hostname, &svr_port))
-		return 1;
-
-	//Send some data
-	message = "USER java.specht";
-	if (send(s, message, strlen(message), 0) < 0)
-	{
-		puts("Send failed");
-		return 1;
-	}
-	puts("Data Sent\n");
-
-	//Receive a reply from the server
-	if ((recv_size = recv(s, server_reply, 2000, 0)) == SOCKET_ERROR)
-	{
-		puts("recv failed");
-	}
-
-	puts("Reply received\n");
-
-	//Add a NULL terminating character to make it a proper string before printing
-	server_reply[recv_size] = '\0';
-	puts(server_reply);
-
-	system("pause");
-	return 0;
-}
+#pragma comment(lib,"ws2_32.lib") //Winsock Library
 
 int get_adr(char *hostname, unsigned long *svr_adr)
 {
@@ -117,4 +77,57 @@ void sock_end(SOCKET *s)
 {
 	closesocket(*s);
 	WSACleanup();
+}
+
+int main(int argc, char *argv[])
+{
+	WSADATA wsa;
+	SOCKET s;
+	char *hostname, *message, server_reply[2000];
+	int recv_size, svr_port;
+
+	if(argc == 3){
+	hostname = argv[1];
+	svr_port = atoi(argv[2]);
+	} else {
+		puts("main.exe <hostname> <port>");
+	}
+
+	if (sock_start(&wsa, &s, hostname, &svr_port))
+		return 1;
+
+	if ((recv_size = recv(s, server_reply, 2000, 0)) == SOCKET_ERROR)
+	{
+		puts("recv failed");
+	}
+
+	puts("Reply received\n");
+
+	//Add a NULL terminating character to make it a proper string before printing
+	server_reply[recv_size] = '\0';
+	puts(server_reply);
+
+	//Send some data
+	message = "NOOP";
+	if (send(s, message, strlen(message), 0) < 0)
+	{
+		puts("Send failed");
+		return 1;
+	}
+	puts("Data Sent\n");
+
+	//Receive a reply from the server
+	if ((recv_size = recv(s, server_reply, 2000, 0)) == SOCKET_ERROR)
+	{
+		puts("recv failed");
+	}
+
+	puts("Reply received\n");
+
+	//Add a NULL terminating character to make it a proper string before printing
+	server_reply[recv_size] = '\0';
+	puts(server_reply);
+
+	system("pause");
+	return 0;
 }
